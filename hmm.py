@@ -55,6 +55,7 @@ class HMM:
             fwd[t+1] = np.dot(fwd[t], self.a)*self.b[:, O[t+1]]
         return fwd
     
+    
     def full_prob(self, fwd):
         return fwd[-1].sum()
 
@@ -119,7 +120,7 @@ class HMM:
         return e_b
         # return np.array(map(lambda k: np.sum(gamma[O==k],axis=0)/np.sum(gamma, axis=0), np.arange(self.M))).T
     
-    def _train(self, O, epochs=15):
+    def _train(self, O, epochs=15, smoothing=0):
         
         hmm_new = self.hmm
         for i in range(epochs):
@@ -131,8 +132,8 @@ class HMM:
             x = self._xi(fw, bk, fp, O)
 
             self.pi = self._exp_pi(g)
-            self.a = self._exp_a(g, x)
-            self.b = self._exp_b(g, O)
+            self.a = self._exp_a(g, x, smoothing)
+            self.b = self._exp_b(g, O, smoothing)
             
             err = np.concatenate(((self.pi-hmm_new[0]).ravel(),(self.a-hmm_new[1]).ravel(),(self.b-hmm_new[2]).ravel()))    
             hmm_new = self.hmm
@@ -140,18 +141,18 @@ class HMM:
             print ('Update #{} Probability: {} -- Mean Error:{}'.format(i+1, self.full_prob(self.forward(O)), np.mean(err**2)))
 
             
-    def train(self, sequences, epochs=15, delta = 0.00001, smoothing=0):
+    def train(self, sequences, epochs=15, delta = 0.0001, smoothing=0):
         
         hmm_new = self.hmm
         length = len(sequences)
         
         old_likelihood = 0
         for O in sequences:
-            old_likelihood += log(self.full_prob(self.forward(O)))
+            old_likelihood += np.log(self.full_prob(self.forward(O)))
+        old_likelihood /= length
         
         for i in range(epochs):
             new_likelihood = 0
-            f = 0
             
             for O in sequences:
                 
@@ -169,13 +170,15 @@ class HMM:
                 self.a = self._exp_a(g, x, smoothing)
                 self.b = self._exp_b(g, O, smoothing)
 
+                self.hmm = (self.pi, self.a, self.b, self.N, self.M, self.T)
+                err = np.concatenate(((self.pi-hmm_new[0]).ravel(),(self.a-hmm_new[1]).ravel(),(self.b-hmm_new[2]).ravel()))    
                 hmm_new = self.hmm
-                f += self.full_prob(self.forward(O))
-                new_likelihood += log(self.full_prob(self.forward(O)))
+                new_likelihood += np.log(self.full_prob(self.forward(O)))
             
          
             new_likelihood /= length
-            print ('Update #{} Probability: {}'.format(1, new_likelihood))
+            
+            print ('Update #{} Log Probability: {} -- Mean Error {}'.format(i+1, new_likelihood, np.mean(err**2)))
             
             if abs(new_likelihood - old_likelihood) < delta:
                 break;
@@ -183,4 +186,8 @@ class HMM:
             old_likelihood = new_likelihood
                 
             
-    
+    def likelihood(self, new_observations):
+        T = len(new_observations)
+        new_hmm = HMM(self.N, self.M, T, self.a, self.b, self.pi)
+        forward = new_hmm.forward(new_observations)
+        return new_hmm.full_prob(forward)
