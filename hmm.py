@@ -153,6 +153,7 @@ class HMM:
         
         for i in range(epochs):
             new_likelihood = 0
+            total_prob = 0
             
             for O in sequences:
                 
@@ -174,11 +175,14 @@ class HMM:
                 err = np.concatenate(((self.pi-hmm_new[0]).ravel(),(self.a-hmm_new[1]).ravel(),(self.b-hmm_new[2]).ravel()))    
                 hmm_new = self.hmm
                 new_likelihood += np.log(self.full_prob(self.forward(O)))
+                total_prob += self.full_prob(self.forward(O))
             
          
             new_likelihood /= length
+            total_prob /= length
             
             print ('Update #{} Log Probability: {} -- Mean Error {}'.format(i+1, new_likelihood, np.mean(err**2)))
+            print ('Update #{} Probability: {}'.format(i+1, total_prob))
             
             if abs(new_likelihood - old_likelihood) < delta:
                 break;
@@ -191,3 +195,4 @@ class HMM:
         new_hmm = HMM(self.N, self.M, T, self.a, self.b, self.pi)
         forward = new_hmm.forward(new_observations)
         return new_hmm.full_prob(forward)
+    
