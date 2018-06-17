@@ -1,6 +1,5 @@
 # HMM for Cowrie Honeypot
 
---- 
 ## File Description
 ```python
 hmm_cowrie.ipynb: hmm on cowrie dataset
