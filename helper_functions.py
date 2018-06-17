@@ -4,6 +4,7 @@ from math import log
 from tqdm import tqdm_notebook as tqdm
 import pickle
 from sklearn.preprocessing import LabelEncoder
+import matplotlib.pyplot as plt
 import hmm
 
 def load_pickle(name):
@@ -12,6 +13,21 @@ def load_pickle(name):
     print('pickle loading complete')
     return k
 
+def vis(data1,data2,data3):
+    cow = pd.concat([data1,data2,data3],axis=0)
+    print ('Data Shape : '+str(cow.shape))
+    display(cow.head())
+    display(cow['eventid'].value_counts().plot(kind='bar', figsize=(15, 5)))
+    plt.show()
+    display(cow['src_ip'].value_counts()[:10].plot(kind='barh', figsize=(18, 6)))
+    plt.show()
+    display(cow['username'].value_counts()[:10].plot(kind='bar', figsize=(10, 5)))
+    plt.show()
+    display(cow['password'].value_counts()[:20].plot(kind='bar', figsize=(18, 8)))
+    plt.show()
+    display(cow['system'].value_counts()[:20].plot(kind='bar', figsize=(18, 7)))
+    plt.show()
+
 def process_data(data1,data2,data3):
     df = pd.concat([data1,data2,data3],axis=0)
     le = LabelEncoder()
@@ -19,7 +35,9 @@ def process_data(data1,data2,data3):
     data_agg = df.groupby('session',as_index=False).agg(lambda x: x.tolist())
     agg = pd.DataFrame()
     agg['eventid'] = data_agg['eventid'].values
-    return agg, le
+    print('processed data samples: \n')
+    print(agg.head())
+    return agg['eventid'], le
 
 def desired_seq(df,length):
     data = []
@@ -43,6 +61,10 @@ def calculate_probablity(mod,df):
     data['prob'] = prob
     print('result samples: \n')
     print(data.head())
+    print('\n Further analysis of results:  \n')
+    print(data.describe())
+    print('\n Max probablity sequence: \n')
+    print(data.loc[data['prob'].idxmax(),:])
     return data
 
 def sample_per_seq(df,n):
@@ -58,6 +80,4 @@ def sample_per_seq(df,n):
     samples = samples.sort_values('no of samples',ascending = False)
     samples = samples.reset_index(drop=True)
     print('Top maximum number of sequence length: \n')
-    print(samples.head(10))
-    print('\n Further analysis of results:  \n')
-    print(samples.describe())
+    print(samples.head(20))
