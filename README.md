@@ -1,4 +1,4 @@
-# HMM for Cowrie Honeypot
+# HMM & Markov chain for Cowrie Honeypot
 
 ## File Description
 ```python
