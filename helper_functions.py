@@ -70,16 +70,14 @@ def calculate_probablity(mod,df):
     print(data.loc[data['prob'].idxmax(),:])
     return data
 
-def sample_per_seq(df,n):
+def sample_per_seq(df, n):
     samples = pd.DataFrame()
-    for index in tqdm(range(0,n)):
-        samples.loc[index,'length'] = index
-        data = []
-        length = index
-        for i in range(0,len(df)):
-            if len(df[i]) == length:
-                data.append(df[i])
-        samples.loc[index,'no of samples'] = len(data)
+    for index in range(0,n):
+        samples.loc[index, 'length'] = index
+        samples.loc[index, 'no of samples'] = 0
+    for i in range(0, len(df)):
+        length = len(df[i])
+        samples.loc[length, 'no of samples'] += 1    
     samples = samples.sort_values('no of samples',ascending = False)
     samples = samples.reset_index(drop=True)
     print('Top maximum number of sequence length: \n')
