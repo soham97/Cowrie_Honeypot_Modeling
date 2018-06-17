@@ -37,7 +37,10 @@ def process_data(data1,data2,data3):
     agg['eventid'] = data_agg['eventid'].values
     print('processed data samples: \n')
     print(agg.head())
-    return agg['eventid'], le
+    with open("input/data.txt", "wb") as fp:   
+        pickle.dump(seq, fp)
+    seqs = load_pickle('input/data.txt')
+    return seqs, le
 
 def desired_seq(df,length):
     data = []
