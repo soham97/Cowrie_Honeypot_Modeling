@@ -3,12 +3,12 @@
 --- 
 ## File Description
 ```python
-hmm_cowrie.ipynb: hmm on cowrie dataset<br>
-mc_cowrie.ipynb: markov chain on cowrie dataset<br>
-helper_functions.py: support functions for visulation and probablities<br>
-hmm.py: hmm implementation<br>
-markovchain.py: markovchain implementation<br>
-data_visualization: cowrie data visualization<br>
+hmm_cowrie.ipynb: hmm on cowrie dataset
+mc_cowrie.ipynb: markov chain on cowrie dataset
+helper_functions.py: support functions for visulation and probablities
+hmm.py: hmm implementation
+markovchain.py: markovchain implementation
+data_visualization: cowrie data visualization
 ```
 
 ---
