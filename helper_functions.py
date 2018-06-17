@@ -67,17 +67,43 @@ def calculate_probablity(mod,df):
     print(data.loc[data['prob'].idxmax(),:])
     return data
 
-def sample_per_seq(df,n):
+def sample_per_seq(df, n):
     samples = pd.DataFrame()
-    for index in tqdm(range(0,n)):
-        samples.loc[index,'length'] = index
-        data = []
-        length = index
-        for i in range(0,len(df)):
-            if len(df[i]) == length:
-                data.append(df[i])
-        samples.loc[index,'no of samples'] = len(data)
+    for index in range(0,n):
+        samples.loc[index, 'length'] = index
+        samples.loc[index, 'no of samples'] = 0
+    for i in range(0, len(df)):
+        length = len(df[i])
+        samples.loc[length, 'no of samples'] += 1    
     samples = samples.sort_values('no of samples',ascending = False)
     samples = samples.reset_index(drop=True)
     print('Top maximum number of sequence length: \n')
     print(samples.head(20))
+    
+def next_highprob_action(mod,seq,n_class,le):
+    df = pd.DataFrame()
+    df['seq'] = 0
+    df['seq'] = df['seq'].astype(str)
+    df['prob'] = 0
+    for i in range(0,n_class):
+        k = seq.copy()
+        k.append(i)
+        y = mod.likelihood(k)
+        df.loc[i,'seq'] = str(k)
+        df.loc[i,'prob'] = y
+    if df['prob'].sum() == 0:
+        print('The given seq itself is highly unlikely')
+        display(df)
+    else:
+        maxlast = df.loc[df['prob'].idxmax(),:]['seq'][-2]
+        maxtextlast = le.inverse_transform(int(maxlast))
+        minlast = df.loc[df['prob'].idxmin(),:]['seq'][-2]
+        mintextlast = le.inverse_transform(int(minlast))
+        print('\n Next highly probable action taken by hacker will be ' + str(maxlast) + ' i.e ' + maxtextlast)
+        print('\n')
+        print(df.loc[df['prob'].idxmax(),:])
+        print('\n Next least probable action taken by hacker will be ' + str(minlast) + ' i.e ' + mintextlast)
+        print('\n')
+        print(df.loc[df['prob'].idxmax(),:])
+        print('\n')
+        display(df)
