@@ -7,6 +7,16 @@ from sklearn.preprocessing import LabelEncoder
 import matplotlib.pyplot as plt
 import hmm
 
+import networkx as nx
+from nxpd import draw
+
+lab = ['cowrie.client.size', 'cowrie.client.version', 'cowrie.command.failed', 'cowrie.command.input',
+       'cowrie.command.input/delete', 'cowrie.command.input/dir_sudo', 'cowrie.command.input/system', 
+       'cowrie.command.input/write', 'cowrie.command.success', 'cowrie.direct-tcpip.data', 'cowrie.direct-tcpip.request', 
+       'cowrie.log.closed', 'cowrie.log.open', 'cowrie.login.failed', 'cowrie.login.success', 'cowrie.session.closed', 
+       'cowrie.session.connect', 'cowrie.session.file_download', 'cowrie.session.input']
+
+
 def load_pickle(name):
     with open(name,'rb') as file:
         k = pickle.load(file)
@@ -37,7 +47,10 @@ def process_data(data1,data2,data3):
     agg['eventid'] = data_agg['eventid'].values
     print('processed data samples: \n')
     print(agg.head())
-    return agg['eventid'], le
+    with open("input/data.txt", "wb") as fp:   
+        pickle.dump(agg['eventid'].values, fp)
+    seqs = load_pickle('input/data.txt')
+    return seqs, le
 
 def desired_seq(df,length):
     data = []
@@ -66,7 +79,7 @@ def calculate_probablity(mod,df):
     print('\n Max probablity sequence: \n')
     print(data.loc[data['prob'].idxmax(),:])
     return data
-
+    
 def sample_per_seq(df, n):
     samples = pd.DataFrame()
     for index in range(0,n):
@@ -80,30 +93,15 @@ def sample_per_seq(df, n):
     print('Top maximum number of sequence length: \n')
     print(samples.head(20))
     
-def next_highprob_action(mod,seq,n_class,le):
-    df = pd.DataFrame()
-    df['seq'] = 0
-    df['seq'] = df['seq'].astype(str)
-    df['prob'] = 0
-    for i in range(0,n_class):
-        k = seq.copy()
-        k.append(i)
-        y = mod.likelihood(k)
-        df.loc[i,'seq'] = str(k)
-        df.loc[i,'prob'] = y
-    if df['prob'].sum() == 0:
-        print('The given seq itself is highly unlikely')
-        display(df)
-    else:
-        maxlast = df.loc[df['prob'].idxmax(),:]['seq'][-2]
-        maxtextlast = le.inverse_transform(int(maxlast))
-        minlast = df.loc[df['prob'].idxmin(),:]['seq'][-2]
-        mintextlast = le.inverse_transform(int(minlast))
-        print('\n Next highly probable action taken by hacker will be ' + str(maxlast) + ' i.e ' + maxtextlast)
-        print('\n')
-        print(df.loc[df['prob'].idxmax(),:])
-        print('\n Next least probable action taken by hacker will be ' + str(minlast) + ' i.e ' + mintextlast)
-        print('\n')
-        print(df.loc[df['prob'].idxmax(),:])
-        print('\n')
-        display(df)
+def plot_seq(seq, dpi=80):
+    nodes = []
+    for i in range(0, len(seq)-1):
+        nodes.append(str(i)+" - "+lab[seq[i]])
+    edges = []
+    for i in range(0, len(seq)-1):
+        edges.append(((str(i)+" - "+lab[seq[i]]), (str(i+1)+" - "+lab[seq[i+1]])))
+    G = nx.DiGraph()
+    G.graph['dpi'] = dpi
+    G.add_nodes_from(nodes)
+    G.add_edges_from(edges)
+    return G
