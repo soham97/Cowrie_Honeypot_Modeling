@@ -43,3 +43,9 @@ data_visualization: cowrie data visualization
 <img src="img/4.png">                                                                                                                                  </p>
 <p align="center">
 <img src="img/5.png">                                                                                                                                  </p>
+
+---
+## Visualizing a sequence
+
+<p align="center">
+<img src="img/6.png">                                                                                                                                  </p>
