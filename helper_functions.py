@@ -78,7 +78,8 @@ def calculate_probablity(mod,df):
     print(data.describe())
     print('\n Max probablity sequence: \n')
     print(data.loc[data['prob'].idxmax(),:])
-    return data
+    k = data.loc[data['prob'].idxmax(),:]
+    return data, k
     
 def sample_per_seq(df, n):
     samples = pd.DataFrame()
@@ -105,3 +106,31 @@ def plot_seq(seq, dpi=80):
     G.add_nodes_from(nodes)
     G.add_edges_from(edges)
     return G
+
+def next_highprob_action(mod,seq,n_class,le):
+    df = pd.DataFrame()
+    df['seq'] = 0
+    df['seq'] = df['seq'].astype(str)
+    df['prob'] = 0
+    for i in range(0,n_class):
+        k = seq.copy()
+        k.append(i)
+        y = mod.likelihood(k)
+        df.loc[i,'seq'] = str(k)
+        df.loc[i,'prob'] = y
+    if df['prob'].sum() == 0:
+        print('The given seq itself is highly unlikely')
+        display(df)
+    else:
+        maxlast = df.loc[df['prob'].idxmax(),:]['seq'][-2]
+        maxtextlast = le.inverse_transform(int(maxlast))
+        minlast = df.loc[df['prob'].idxmin(),:]['seq'][-2]
+        mintextlast = le.inverse_transform(int(minlast))
+        print('\n Next highly probable action taken by hacker will be ' + str(maxlast) + ' i.e ' + maxtextlast)
+        print('\n')
+        print(df.loc[df['prob'].idxmax(),:])
+        print('\n Next least probable action taken by hacker will be ' + str(minlast) + ' i.e ' + mintextlast)
+        print('\n')
+        print(df.loc[df['prob'].idxmax(),:])
+        print('\n')
+        display(df)
